@@ -11,58 +11,28 @@ app.use(cors());
 app.use(express.json());
 
 const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: '', // Put your MySQL password here
-  database: 'sample_db'
+  host: process.env.DB_HOST,    // localhost
+  user: process.env.DB_USERNAME, //root
+  password: process.env.DB_PASSWORD,  // '' // Put your MySQL password here
+  database: process.env.DB_DBNAME, // sample_db
+  waitForConnections:true,
+  connectionLimit:10,
+  queueLimit:0
 });
 // const redisurl = "redis://127.0.0.1:6379";
 // const client = redis.createClient(redisurl);
-let redisClient;
-(async()=> {
- redisClient = redis.createClient({
-    host: 'redis-16492.c12.us-east-1-4.ec2.cloud.redislabs.com',
-    port: 16492,
-    // password: 'G2pve0Tc9WXdFaOboDHchSQ5iNOgvxnJ',
-    // legacyMode: true
-});
-await redisClient.connect();
-})(); 
+// let redisClient;
+// (async()=> {
+//  redisClient = redis.createClient({
+//     host: '',
+//     port: 16492,
+//     // legacyMode: true
+// });
+// await redisClient.connect();
+// })(); 
 
 // app.use(bodyParser.json());
-/*
-app.post('/submit', (req, res) => {
-  try {
-    const { username, language, input, source_code } = req.body;
-    const timestamp = new Date().toISOString().slice(0, 19).replace('T', ' '); // Get current timestamp
-    const data = {
-      username,
-      language,
-      input,
-      source_code,
-      timestamp
-    };
-    console.log(username);
-    const query = "INSERT INTO `sample`(`username`, `language`, `input`, `source_code`, `timestamp`) VALUES (?, ?, ?, ?, ?)";
-    db.query(query, [username, language, input, source_code, timestamp], (err, data) => {
-      if (err) return res.json(err);
-    });
-    console.log(data);
-    redisClient.set(username, JSON.stringify(data), (error, result) => {
-      if (error) {
-        console.error('Error inserting data into Redis:', error);
-        res.status(500).json({ error: 'Error inserting data into Redis' });
-      } else {
-        console.log('Data inserted into Redis:', result);
-        res.json({ message: "Data inserted successfully" });
-      }
-    });
-  } catch (error) {
-    console.error('Error handling POST request:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-*/
+
 app.post('/submit', (req, res) => {
   try {
     const { username, language, input, source_code } = req.body;
@@ -87,15 +57,15 @@ app.post('/submit', (req, res) => {
       };
 
       // Store data in Redis
-      redisClient.set(username, JSON.stringify(data), (redisError, redisResult) => {
-        if (redisError) {
-          console.error('Error inserting data into Redis:', redisError);
-          return res.status(500).json({ error: 'Error inserting data into Redis' });
-        }
+      // redisClient.set(username, JSON.stringify(data), (redisError, redisResult) => {
+      //   if (redisError) {
+      //     console.error('Error inserting data into Redis:', redisError);
+      //     return res.status(500).json({ error: 'Error inserting data into Redis' });
+      //   }
         
-        console.log('Data inserted into Redis:', redisResult);
-        return res.json({ message: "Data inserted successfully" });
-      });
+      //   console.log('Data inserted into Redis:', redisResult);
+      //   return res.json({ message: "Data inserted successfully" });
+      // });
     });
   } catch (error) {
     console.error('Error handling POST request:', error);
@@ -105,16 +75,16 @@ app.post('/submit', (req, res) => {
 
 
 app.get('/entries', (req, res) => {
-  // console.log(data);
-  redisClient.get('entries', (err, data) => {
-    if (err) {
-      console.error('Error fetching data from cache:', err);
-      return res.status(500).json({ error: 'Error fetching data from cache' });
-    }
-    if (data) {
-      return res.json(JSON.parse(data));
-    }
-    });
+  // check the data in redis
+  // redisClient.get('entries', (err, data) => {
+  //   if (err) {
+  //     console.error('Error fetching data from cache:', err);
+  //     return res.status(500).json({ error: 'Error fetching data from cache' });
+  //   }
+  //   if (data) {
+  //     return res.json(JSON.parse(data));
+  //   }
+  //   });
     const query = "SELECT * FROM `sample`";
     db.query(query, (err, data) => {
       if (err) {
@@ -286,5 +256,42 @@ app.get('/', (req, res) => {
 
 app.listen(8081, () => {
   console.log('Listening on port 8081');
+});
+*/
+
+
+
+
+/*
+app.post('/submit', (req, res) => {
+  try {
+    const { username, language, input, source_code } = req.body;
+    const timestamp = new Date().toISOString().slice(0, 19).replace('T', ' '); // Get current timestamp
+    const data = {
+      username,
+      language,
+      input,
+      source_code,
+      timestamp
+    };
+    console.log(username);
+    const query = "INSERT INTO `sample`(`username`, `language`, `input`, `source_code`, `timestamp`) VALUES (?, ?, ?, ?, ?)";
+    db.query(query, [username, language, input, source_code, timestamp], (err, data) => {
+      if (err) return res.json(err);
+    });
+    console.log(data);
+    redisClient.set(username, JSON.stringify(data), (error, result) => {
+      if (error) {
+        console.error('Error inserting data into Redis:', error);
+        res.status(500).json({ error: 'Error inserting data into Redis' });
+      } else {
+        console.log('Data inserted into Redis:', result);
+        res.json({ message: "Data inserted successfully" });
+      }
+    });
+  } catch (error) {
+    console.error('Error handling POST request:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 */
