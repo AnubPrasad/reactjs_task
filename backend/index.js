@@ -5,12 +5,35 @@ const mysql = require('mysql');
 const cors = require('cors');
 const redis = require('redis');
 // const util=require("util");
-const db=require("./database/index")
+// const db=require("./database/index")
 const app = express();
 
 const router = express.Router();
 app.use(cors());
 app.use(express.json());
+
+const util = require('util');
+const dotenv = require('dotenv');
+dotenv.config();
+
+const db = mysql.createPool({
+    host: process.env.DB_HOST, 
+    user: process.env.DB_USERNAME, 
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DBNAME,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+});
+
+// Promisify pool operations
+const query = util.promisify(db.query).bind(db);
+
+db.getConnection((err, conn) => {
+    if (err) console.log(err);
+    console.log("Connected successfully");
+});
+
 
 
 app.post('/submit', async (req, res) => {

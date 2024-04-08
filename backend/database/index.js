@@ -21,7 +21,6 @@ pool.getConnection((err, conn) => {
     console.log("Connected successfully");
 });
 
-module.exports = query;
 
 
 
