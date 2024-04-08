@@ -7,6 +7,8 @@ const redis = require('redis');
 // const util=require("util");
 const db=require("../database/index")
 const app = express();
+
+const router = express.Router();
 app.use(cors());
 app.use(express.json());
 
